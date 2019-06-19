@@ -1,5 +1,3 @@
-require_relative './print_helpers'
-
 class Player
   attr_accessor :move, :name
 
@@ -12,10 +10,10 @@ class Human < Player
   def set_name
     n = nil
     loop do
-      print "=> Choose a name for yuor player: "
-      n = gets.chomp.strip
+      puts "Hello, choose a name for yuor player."
+      n = gets.chomp
       break unless n.empty?
-      print "=> Sorry, must enter a name composed of letters: "
+      puts "Sorry, must enter a value."
     end
     self.name = n
   end
@@ -36,10 +34,9 @@ class Human < Player
     choice = nil
     allowed_str = Move.allowed_moves.join(", ")
     loop do
-      print "=> Choose one: #{allowed_str}: "
-
-      choice = Move.validate_user_input(gets.chomp.strip)
-      break if choice
+      puts "Please choose #{allowed_str}"
+      choice = gets.chomp
+      break if Move.allowed_moves.include? choice
       puts "Sorry, invalid choice."
     end
     self.move = move_from_str(choice)
@@ -69,33 +66,16 @@ end
 
 class Move
   include Comparable
-  attr_reader :value, :rules_key
-
-  RULES = { rk: { rk: 0, pa: -1, sc: 1, sp: -1, lz: 1 },
-            pa: { rk: 1, pa: 0, sc: -1, sp: 1, lz: -1 },
-            sc: { rk: -1, pa: 1, sc: 0, sp: -1, lz: 1 },
-            sp: { rk: 1, pa: -1, sc: 1, sp: 0, lz: -1 },
-            lz: { rk: -1, pa: 1, sc: -1, sp: 1, lz: 0 } }
+  attr_reader :value
 
   VALUES = %w(rock paper scissors lizard spock)
 
-  def initialize
-    @value = self.class.name.downcase
+  def initialize(idx)
+    @value = VALUES[idx]
   end
 
-def self.validate_user_input(user_input)
-  case user_input
-  when /\Ar[ock]*\Z/i then VALUES[0]
-  when /\Ap[aper]*\Z/i then VALUES[1]
-  when /\Asp[ock]*\Z/i then VALUES[3]
-  when /\As[cissors]*\Z/i then VALUES[2]
-  when /\Al[izard]*\Z/i then VALUES[4]
-  else false
-  end
-end
-
-  def <=>(other)
-    RULES[rules_key][other.rules_key]
+  def <=>(other_move)
+    compare_with(other_move)
   end
 
   def to_s
@@ -113,36 +93,151 @@ end
 
 class Rock < Move
   def initialize
-    super
-    @rules_key = :rk
+    super(0)
+  end
+
+  def compare_with(other_move)
+    other_move.compare_rock
+  end
+
+  def compare_rock
+    0
+  end
+
+  def compare_paper
+    1
+  end
+
+  def compare_scissors
+    -1
+  end
+
+  def compare_lizard
+    -1
+  end
+
+  def compare_spock
+    1
   end
 end
 
 class Paper < Move
   def initialize
-    super
-    @rules_key = :pa
+    super(1)
+  end
+
+  def compare_with(other_move)
+    other_move.compare_paper
+  end
+
+  def compare_rock
+    -1
+  end
+
+  def compare_paper
+    0
+  end
+
+  def compare_scissors
+    1
+  end
+
+  def compare_lizard
+    1
+  end
+
+  def compare_spock
+    -1
   end
 end
 
 class Scissors < Move
   def initialize
-    super
-    @rules_key = :sc
+    super(2)
+  end
+
+  def compare_with(other_move)
+    other_move.compare_scissors
+  end
+
+  def compare_rock
+    1
+  end
+
+  def compare_paper
+    -1
+  end
+
+  def compare_scissors
+    0
+  end
+
+  def compare_lizard
+    -1
+  end
+
+  def compare_spock
+    1
   end
 end
 
 class Lizard < Move
   def initialize
-    super
-    @rules_key = :lz
+    super(3)
+  end
+
+  def compare_with(other_move)
+    other_move.compare_lizard
+  end
+
+  def compare_rock
+    1
+  end
+
+  def compare_paper
+    -1
+  end
+
+  def compare_scissors
+    1
+  end
+
+  def compare_lizard
+    0
+  end
+
+  def compare_spock
+    -1
   end
 end
 
 class Spock < Move
   def initialize
-    super
-    @rules_key = :sp
+    super(4)
+  end
+
+  def compare_with(other_move)
+    other_move.compare_spock
+  end
+
+  def compare_rock
+    -1
+  end
+
+  def compare_paper
+    1
+  end
+
+  def compare_scissors
+    -1
+  end
+
+  def compare_lizard
+    1
+  end
+
+  def compare_spock
+    0
   end
 end
 
@@ -158,6 +253,7 @@ class Round
   end
 
   def tie?
+    return nil if @moves.empty?
     first = @moves[0]
     @moves.all? { |move| move == first }
   end
@@ -181,12 +277,12 @@ class Round
 
   def display_winner
     display_moves
-    puts "   #{winner.name} won!"
+    puts "#{winner.name} won!"
   end
 
   def display_moves
     @players.each_index do |idx|
-      puts "   #{@players[idx].name} chose #{@moves[idx]}"
+      puts "#{@players[idx].name} chose #{@moves[idx]}"
     end
   end
 
@@ -200,7 +296,7 @@ class Round
 
   def display_tie
     display_moves
-    puts "   It's a tie!"
+    puts "It's a tie!"
   end
 end
 
@@ -226,47 +322,49 @@ class RPSGame
     @rounds << Round.new([human, computer])
   end
 
-  def scores
-    game_scores = { human => 0, computer => 0 }
-    @rounds.each do |round|
-      game_scores[round.winner] += 1 if round.winner
-    end
-    game_scores
-  end
-
   def winner?
-    scores().any? { |_player, score| score == GAME_THRESHOLD }
+    scores = { human => 0, computer => 0 }
+    @rounds.each do |round|
+      scores[round.winner] += 1 if round.winner
+    end
+    scores.any? { |_player, score| score == GAME_THRESHOLD }
   end
 
-  def retrieve_play_again_answer
-    print "=> Press any key to continue the game or q to end this game. "
-    user_answer = gets.chomp.strip
-  end
-
-  def play_again?(user_answer)
-    user_answer.downcase != 'q'
+  def play_again?
+    user_answer = nil
+    loop do
+      puts "Would you like to play again? (y/n)"
+      user_answer = gets.chomp
+      break if ['y', 'n'].include? user_answer.downcase
+      puts "Sorry, must be y or n"
+    end
+    user_answer.downcase == 'y'
   end
 
   def display_winner
-    puts "   We have a Game winner"
-    puts "   *** #{winner.name} ***"
+    return unless winner?
+    puts "We have a Game winner"
+    puts "*** #{winner.name} ***"
   end
 
   def display_summary
     puts
-    puts " Rounds summary"
+    puts "Rounds summary"
     @rounds.each_index do |idx|
       current_round = @rounds[idx]
-      puts " Round\t#{idx + 1}"
+      puts "Round\t#{idx + 1}"
       current_round.display_result
     end
-    puts
-    puts " #{winner.name} won the Game!" if winner
+    puts "#{winner.name} won the Game!" if winner
   end
 
   def winner
     game_winner = nil
-    scores().each do |player, score|
+    scores = { human => 0, computer => 0 }
+    @rounds.each do |round|
+      scores[round.winner] += 1 if round.winner
+    end
+    scores.each do |player, score|
       game_winner = player if score == GAME_THRESHOLD
     end
     game_winner
@@ -296,9 +394,9 @@ class RPSGame
     loop do
       add_round
       @rounds.last.play
-      puts "   #{human.name} scored: #{human_scores}"
-      puts "   #{computer.name} scored: #{computer_scores}"
-      break unless on? && play_again?(retrieve_play_again_answer)
+      puts "#{human.name} scored: #{human_scores}"
+      puts "#{computer.name} scored: #{computer_scores}"
+      break unless on? && play_again?
       clear_screen
     end
   end
@@ -327,7 +425,7 @@ class RPSSession
     add_game(@game)
     @games.last.play
     loop do
-      break unless play_again?(retrieve_play_again_answer)
+      break unless play_again?
       @game = RPSGame.new(@game.human, @game.computer)
       add_game(@game)
       @games.last.play
@@ -335,33 +433,26 @@ class RPSSession
     display_goodbye_message
   end
 
-  def retrieve_play_again_answer
+  def play_again?
     user_answer = nil
     loop do
-      print "   Would you like to play another game? (y/n) "
+      puts "Would you like to play another game? (y/n)"
       user_answer = gets.chomp
       break if ['y', 'n'].include? user_answer.downcase
-      puts "   Sorry, must be y or n"
+      puts "Sorry, must be y or n"
     end
-    user_answer
-  end
-
-  def play_again?(user_answer)
     user_answer.downcase == 'y'
   end
 
   def display_welcome_message
-    puts "   Hello #{@game.human.name}"
-    puts "   You will play against #{@game.computer.name}."
-    puts "   To win a match you need to win 3 rounds."
+    puts "Hello #{@game.human.name}"
+    puts "Welcome to Rock, Paper, Scissors, Lizard, Spock!"
   end
 
   def display_goodbye_message
-    puts "   Thanks for playing Rock, Paper, Scissors, Lizard, Spock. Good bye! "
+    puts "Thanks for playing Rock, Paper, Scissors, Lizard, Spock. Good bye! "
   end
 end
-
-print_intro
 session = RPSSession.new
 session.play_games
 
