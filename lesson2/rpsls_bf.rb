@@ -83,16 +83,16 @@ class Move
     @value = self.class.name.downcase
   end
 
-def self.validate_user_input(user_input)
-  case user_input
-  when /\Ar[ock]*\Z/i then VALUES[0]
-  when /\Ap[aper]*\Z/i then VALUES[1]
-  when /\Asp[ock]*\Z/i then VALUES[3]
-  when /\As[cissors]*\Z/i then VALUES[2]
-  when /\Al[izard]*\Z/i then VALUES[4]
-  else false
+  def self.validate_user_input(user_input)
+    case user_input
+    when /\Ar[ock]*\Z/i then VALUES[0]
+    when /\Ap[aper]*\Z/i then VALUES[1]
+    when /\Asp[ock]*\Z/i then VALUES[3]
+    when /\As[cissors]*\Z/i then VALUES[2]
+    when /\Al[izard]*\Z/i then VALUES[4]
+    else false
+    end
   end
-end
 
   def <=>(other)
     RULES[rules_key][other.rules_key]
@@ -207,7 +207,7 @@ end
 class RPSGame
   attr_accessor :human, :computer
 
-  GAME_THRESHOLD = 2
+  GAME_THRESHOLD = 5
 
   CLEAR_SCREEN = 3
 
@@ -240,7 +240,7 @@ class RPSGame
 
   def retrieve_play_again_answer
     print "=> Press any key to continue the game or q to end this game. "
-    user_answer = gets.chomp.strip
+    gets.chomp.strip
   end
 
   def play_again?(user_answer)
@@ -353,7 +353,7 @@ class RPSSession
   def display_welcome_message
     puts "   Hello #{@game.human.name}"
     puts "   You will play against #{@game.computer.name}."
-    puts "   To win a match you need to win 3 rounds."
+    puts "   To win a match you need to win #{RPSGame::GAME_THRESHOLD} rounds."
   end
 
   def display_goodbye_message
