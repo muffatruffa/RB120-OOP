@@ -68,14 +68,14 @@ class Computer < Player
 end
 
 class Move
-
+  include Comparable
   attr_reader :value, :rules_key
 
-  RULES = { rk: { rk: false, pa: false, sc: true, sp: false, lz: true },
-            pa: { rk: true, pa: false, sc: false, sp: true, lz: false },
-            sc: { rk: false, pa: true, sc: false, sp: false, lz: true },
-            sp: { rk: true, pa: false, sc: true, sp: false, lz: true },
-            lz: { rk: false, pa: true, sc: false, sp: true, lz: false } }
+  RULES = { rk: { rk: 0, pa: -1, sc: 1, sp: -1, lz: 1 },
+            pa: { rk: 1, pa: 0, sc: -1, sp: 1, lz: -1 },
+            sc: { rk: -1, pa: 1, sc: 0, sp: -1, lz: 1 },
+            sp: { rk: 1, pa: -1, sc: 1, sp: 0, lz: -1 },
+            lz: { rk: -1, pa: 1, sc: -1, sp: 1, lz: 0 } }
 
   VALUES = %w(rock paper scissors lizard spock)
 
@@ -87,18 +87,14 @@ class Move
     case user_input
     when /\Ar[ock]*\Z/i then VALUES[0]
     when /\Ap[aper]*\Z/i then VALUES[1]
+    when /\Asp[ock]*\Z/i then VALUES[3]
     when /\As[cissors]*\Z/i then VALUES[2]
-    when /\Al[izard]*\Z/i then VALUES[3]
-    when /\Asp[ock]*\Z/i then VALUES[4]
+    when /\Al[izard]*\Z/i then VALUES[4]
     else false
     end
   end
 
-  def ==(other)
-    rules_key == other.rules_key
-  end
-
-  def >(other)
+  def <=>(other)
     RULES[rules_key][other.rules_key]
   end
 
