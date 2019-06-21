@@ -68,7 +68,6 @@ class Computer < Player
 end
 
 class Move
-
   attr_reader :value, :rules_key
 
   RULES = { rk: { rk: false, pa: false, sc: true, sp: false, lz: true },
@@ -361,7 +360,7 @@ class RPSSession
   end
 
   def display_goodbye_message
-    puts "   Thanks for playing Rock, Paper, Scissors, Lizard, Spock. Good bye! "
+    puts "   Thanks for playing Rock, Paper, Scissors, Lizard, Spock. Good bye!"
   end
 end
 
