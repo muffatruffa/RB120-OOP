@@ -1,0 +1,49 @@
+ttt_welcome: "Welcome to Tic Tac Toe!"
+ttt_game:  "You can play a competition with <%= contest_threshold %>
+ rounds, on a <%= board.number_of_rows_columns %>
+ by <%= board.number_of_rows_columns %> board.\n"
+ttt_players:  "<%= determiner %> player name would be <%= name %>.\n\
+  <%= determiner %> player marker would be <%= marker %>.\n\n"
+ttt_first_player:  "<%= determiner %> player would have the first move.\n"
+ttt_may_choose:  "But if you prefer you may choose:\n
+  players names and markers,\n
+  the first player to move,\n
+  the board dimension and rounds number (from 0 to 9).\n"
+ttt_contest_winner: "<%= contest_winner&.name %> won <%= contest_threshold %> games.\n\
+  We have a Contest winner!\n\
+  Congratulations <%= contest_winner&.name %>\n"
+player_quit: "Eneter 'y' to quit the game or any key to play again."
+user_choose_option: "Do you want to choose? (y / n)"
+user_choose_error: "Sorry thta's not a valid answer, enter y or n.\n"
+players_name_intro: "\nYou may choose all player's name, call them as you like\n\
+  just make sure they have a different name\n\
+  and that they are not made up of just space characters.\n\n"
+players_name_option: "Please enter <%= determiner %> player name"
+players_name_error: "Sorry that's not a valid name. It can't be empty or only spaces.\n"
+players_name_uniq: "Sorry can't be the same name, choose another one with different letters.\n"
+players_markers_intro: "You may choose the players markers.\n\
+  They can't be just a space character,\n\
+  you can enter any other key but just one.\n"
+players_markers_option: "Please enter <%= determiner %> player marker.\n"
+players_markers_error: "Sorry tath's not a valid marker.\n\
+  Enter just one key that is not a space.\n"
+players_markers_uniq: "Sorry can't be the same marker.\n"
+first_player_intro: "You may choose who play first.\n"
+first_player_option: "Do you want to play first? (y / n)\n"
+first_player_error: "Sorry thta's not a valid answer, enter y or n.\n"
+board_rows_option: "Choose the board dimension:\n\
+ Enter 3 or 5 or 7\n"
+board_rows_error: "Sorry that can't be a board dimension.\n\
+  Please enter one of 3, 5 or 7.\n"
+multi_game_intro: "You can play a multi-game contest.\n\
+  You will choose the winning score.\n"
+multi_game_option: "Do you want to play a multi-game contest? (y / n)"
+multi_game_error: "Sorry thta's not a valid answer, enter y or n.\n"
+contest_threshold_intro: "You can choose the score for the contest winner.\n"
+contest_threshold_option: "Please enter a score from 2 to 9.\n"
+contest_threshold_error: "Sorry taht's not a valid score.\n\
+  Please enter just one number from 2 to 9.\n"
+player_quit_option: "Eneter 'q' to quit the game or any key to play again."
+player_quit_error: ""
+new_game_option: "Do you want to play another game? ( y / n )\n"
+new_game_error: "Sorry thta's not a valid answer, enter y or n.\n"
