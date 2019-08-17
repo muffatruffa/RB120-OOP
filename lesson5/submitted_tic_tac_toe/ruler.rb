@@ -33,8 +33,15 @@ class Ruler
     ruler_error(__method__.to_s)
   end
 end
-# It is used to implement Ruler calls Board private methods.
-module Rulable
+
+# Inherited by the Board logic in order to comunicate with the GameRoundCrafter.
+class BoardRuler < Ruler
+  attr_reader :drawer
+
+  def initialize(args = {})
+    @drawer = args.fetch(:drawer, Drawer.new)
+  end
+
   def draw
     drawer.draw_board(self, number_of_rows_columns)
   end
@@ -64,16 +71,5 @@ module Rulable
     winning_move(player.marker) ||
       defensive_move(player.marker) ||
       corner_center_or_any_move
-  end
-end
-
-# Inherited by the Board logic in order to comunicate with the GameRoundCrafter.
-class BoardRuler < Ruler
-  include Rulable
-
-  attr_reader :drawer
-
-  def initialize(args = {})
-    @drawer = args.fetch(:drawer, Drawer.new)
   end
 end

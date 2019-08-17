@@ -148,8 +148,15 @@ class Ruler
     ruler_error(__method__.to_s)
   end
 end
-# It is used to implement Ruler calls Board private methods.
-module Rulable
+
+# Inherited by the Board logic in order to comunicate with the GameRoundCrafter.
+class BoardRuler < Ruler
+  attr_reader :drawer
+
+  def initialize(args = {})
+    @drawer = args.fetch(:drawer, Drawer.new)
+  end
+
   def draw
     drawer.draw_board(self, number_of_rows_columns)
   end
@@ -179,17 +186,6 @@ module Rulable
     winning_move(player.marker) ||
       defensive_move(player.marker) ||
       corner_center_or_any_move
-  end
-end
-
-# Inherited by the Board logic in order to comunicate with the GameRoundCrafter.
-class BoardRuler < Ruler
-  include Rulable
-
-  attr_reader :drawer
-
-  def initialize(args = {})
-    @drawer = args.fetch(:drawer, Drawer.new)
   end
 end
 
@@ -606,13 +602,17 @@ class Human < TTTPlayer
     square = nil
     loop do
       prompt "Choose a square (#{joinor(available_choices)})"
-      square = gets.chomp.to_i
-      break if available_choices.include?(square)
+      square = gets.chomp.strip
+      break if choice_valid?(square, available_choices)
 
       print_margin "Sorry, that's not a valid choise.\n"\
         "Enter one of: #{joinor(available_choices)}"
     end
-    square
+    square.to_i
+  end
+
+  def choice_valid?(square, available_choices)
+    /\A\d\Z/.match(square) && available_choices.include?(square.to_i)
   end
 
   def default_marker
@@ -945,10 +945,6 @@ class TTTGamesRunner
 
     retrieved_options[:multi_game].downcase == 'n'
   end
-
-  # def display_markers
-  #   players.each { |player| print_margin player.marker_message }
-  # end
 
   # Player need to implement #template_binding to public it's binding
   def display_players_defaults

@@ -201,10 +201,6 @@ class TTTGamesRunner
     retrieved_options[:multi_game].downcase == 'n'
   end
 
-  # def display_markers
-  #   players.each { |player| print_margin player.marker_message }
-  # end
-
   # Player need to implement #template_binding to public it's binding
   def display_players_defaults
     players.each do |player|

@@ -1,4 +1,5 @@
-# Allow to retreive messages stored in .yml file.
+# Allow to retreive inputs from the user
+# using messages stored in .yml file.
 # To mix this in and use it's #retrieve method implement:
 # #handle_option_message, #validator #handle_option_error.
 # To use ERB template in .yml file

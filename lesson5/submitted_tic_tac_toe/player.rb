@@ -98,13 +98,17 @@ class Human < TTTPlayer
     square = nil
     loop do
       prompt "Choose a square (#{joinor(available_choices)})"
-      square = gets.chomp.to_i
-      break if available_choices.include?(square)
+      square = gets.chomp.strip
+      break if choice_valid?(square, available_choices)
 
       print_margin "Sorry, that's not a valid choise.\n"\
         "Enter one of: #{joinor(available_choices)}"
     end
-    square
+    square.to_i
+  end
+
+  def choice_valid?(square, available_choices)
+    /\A\d\Z/.match(square) && available_choices.include?(square.to_i)
   end
 
   def default_marker
