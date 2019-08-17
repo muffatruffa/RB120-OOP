@@ -1,3 +1,6 @@
+require 'yaml'
+require 'erb'
+
 module Printer
   MARGIN = '  '
 
@@ -27,6 +30,77 @@ module Printer
     median = to_slice.size / 2
     print(to_slice[0..median] + "\n")
     print(margin + to_slice[(median + 1)..-1].lstrip)
+  end
+end
+
+# Plays a one round game.
+# It has to be provided with players and a Board
+class GameRoundCrafter
+  attr_reader :winner
+  attr_accessor :board, :players
+
+  def initialize(args)
+    @board = args[:board]
+    @players = args[:players]
+    @players_enum = @players.to_enum
+    @current_player = @players_enum.next
+    @winner = nil
+  end
+
+  def play
+    loop do
+      display_game_field if @current_player.need_display?
+      current_player_moves
+      @winner = @current_player if current_player_won?
+      break if current_player_won? || game_over?
+
+      swap_player_clear_screen
+    end
+    clear
+    display_game_field
+
+    winner&.scored
+  end
+
+  def won_message
+    winner.won_message
+  end
+
+  private
+
+  def current_player_won?
+    board.player_won?(@current_player)
+  end
+
+  def display_game_field
+    display_intro
+    puts ""
+    board.draw
+    puts ""
+  end
+
+  def display_intro
+    players.each(&:display_info_game_field)
+  end
+
+  def game_over?
+    board.unmarked_squares_number.empty?
+  end
+
+  def clear
+    system 'clear'
+  end
+
+  def current_player_moves
+    @current_player.move(board)
+  end
+
+  def swap_player_clear_screen
+    @current_player = @players_enum.next
+  rescue StopIteration
+    @players_enum.rewind
+    clear
+    retry
   end
 end
 
@@ -116,79 +190,6 @@ class Square
   end
 end
 
-# Kind of intrface or abstract class has to be implemented to
-# access the game logic (the Board)
-class Ruler
-  def ruler_error(methode_name)
-    raise NotImplementedError,
-          "This #{self.class} cannot respond to: " + methode_name
-  end
-
-  def draw
-    ruler_error(__method__.to_s)
-  end
-
-  def exhausted?
-    ruler_error(__method__.to_s)
-  end
-
-  def caused_winn?
-    ruler_error(__method__.to_s)
-  end
-
-  def update_for_choice
-    ruler_error(__method__.to_s)
-  end
-
-  def availables
-    ruler_error(__method__.to_s)
-  end
-
-  def suggest
-    ruler_error(__method__.to_s)
-  end
-end
-
-# Inherited by the Board logic in order to comunicate with the GameRoundCrafter.
-class BoardRuler < Ruler
-  attr_reader :drawer
-
-  def initialize(args = {})
-    @drawer = args.fetch(:drawer, Drawer.new)
-  end
-
-  def draw
-    drawer.draw_board(self, number_of_rows_columns)
-  end
-
-  def exhausted?
-    unmarked_squares_number.empty?
-  end
-
-  def caused_winn?(player)
-    winning_combinations.each do |combination|
-      squares = combination.map { |square| square_number(square) }
-      return true if squares.include?(player.choice) &&
-                     all_same_marker?(combination)
-    end
-    false
-  end
-
-  def update_for_choice(player)
-    self[player.choice] = player.marker
-  end
-
-  def availables
-    unmarked_squares_number
-  end
-
-  def suggest(player)
-    winning_move(player.marker) ||
-      defensive_move(player.marker) ||
-      corner_center_or_any_move
-  end
-end
-
 # Allows access to a double array as a single array using a Tile jargon
 # To mix this in you have to implement #two_d_array
 # and #set_tile_value(tile,value)
@@ -197,6 +198,12 @@ module Tileable
 
   def size
     number_of_tiles
+  end
+
+  def []=(tile_number, value)
+    return unless valid_square?(tile_number)
+
+    set_tile_value(two_d_array[row(tile_number)][column(tile_number)], value)
   end
 
   private
@@ -213,12 +220,6 @@ module Tileable
     return nil unless valid_square?(tile_number)
 
     two_d_array[row(tile_number)][column(tile_number)]
-  end
-
-  def []=(tile_number, value)
-    return unless valid_square?(tile_number)
-
-    set_tile_value(two_d_array[row(tile_number)][column(tile_number)], value)
   end
 
   def tile_number(target_object)
@@ -277,16 +278,19 @@ module Tileable
   end
 end
 
-# Implements the Board game logic as privates methods.
-# It uses BoardRuler as interface.
-class Board < BoardRuler
+class Board
   include Tileable
 
+  attr_reader :drawer
   attr_accessor :number_of_rows_columns
 
   def initialize(rows_columns = 3)
+    @drawer = Drawer.new
     reset(rows_columns)
-    super()
+  end
+
+  def draw
+    drawer.draw_board(self, number_of_rows_columns)
   end
 
   def reset(rows_columns = number_of_rows_columns)
@@ -294,6 +298,29 @@ class Board < BoardRuler
     @squares = Array.new(number_of_rows_columns) do |_|
       Array.new(number_of_rows_columns) { Square.new }
     end
+  end
+
+  def unmarked_squares_number
+    unmarked = []
+    each_with_index do |square_object, square_index|
+      unmarked << square_index + 1 if square_object.unmarked?
+    end
+    unmarked
+  end
+
+  def player_won?(player)
+    winning_combinations.each do |combination|
+      squares = combination.map { |square| square_number(square) }
+      return true if squares.include?(player.choice) &&
+                     all_same_marker?(combination)
+    end
+    false
+  end
+
+  def suggest(player)
+    winning_move(player.marker) ||
+      defensive_move(player.marker) ||
+      corner_center_or_any_move
   end
 
   private
@@ -312,14 +339,6 @@ class Board < BoardRuler
 
   def all_same_marker?(squares_to_compare)
     all_same?(squares_to_compare)
-  end
-
-  def unmarked_squares_number
-    unmarked = []
-    each_with_index do |square_object, square_index|
-      unmarked << square_index + 1 if square_object.unmarked?
-    end
-    unmarked
   end
 
   def select_marked(target_marker)
@@ -391,116 +410,6 @@ class Board < BoardRuler
      number_of_rows_columns,
      size - number_of_rows_columns + 1,
      size]
-  end
-end
-
-# Subclassed in order to bridge the child class with the ruler.
-class GameCrafter
-  attr_reader :ruler
-
-  def initialize(ruler)
-    @ruler = ruler
-  end
-
-  def display_game_field
-    ruler.draw
-  end
-
-  def available_choices
-    ruler.availables
-  end
-
-  def strategy_choice(player)
-    minded_choice || ruler.suggest(player)
-  end
-
-  def minded_choice
-    nil
-  end
-
-  def accomodate_choice(player)
-    ruler.update_for_choice(player)
-  end
-
-  def player_won?(player)
-    ruler.caused_winn?(player)
-  end
-
-  def exhausted?
-    ruler.exhausted?
-  end
-end
-
-# Plays a one round game.
-# It has to be provided with players and a Ruler for the parent class.
-class GameRoundCrafter < GameCrafter
-  include Printer
-  attr_reader :winner
-  attr_accessor :ruler, :players
-
-  def initialize(args)
-    @ruler = args[:ruler]
-    @players = args[:players]
-    @players_enum = @players.to_enum
-    @current_player = @players_enum.next
-    @winner = nil
-    super(ruler)
-  end
-
-  def play
-    loop do
-      display_game_field if @current_player.need_display?
-      current_player_moves
-      @winner = @current_player if current_player_won?
-      break if current_player_won? || game_over?
-
-      swap_player_clear_screen
-    end
-    clear
-    display_game_field
-
-    winner&.scored
-  end
-
-  def won_message
-    winner.won_message
-  end
-
-  private
-
-  def current_player_won?
-    player_won?(@current_player)
-  end
-
-  def display_game_field
-    display_intro
-    puts ""
-    super
-    puts ""
-  end
-
-  def display_intro
-    players.each(&:display_info_game_field)
-  end
-
-  def game_over?
-    exhausted?
-  end
-
-  def clear
-    system 'clear'
-  end
-
-  def current_player_moves
-    @current_player.move(self)
-  end
-
-  def swap_player_clear_screen
-    @current_player = @players_enum.next
-  rescue StopIteration
-    @players_enum.rewind
-    clear
-    retry
   end
 end
 
@@ -592,10 +501,10 @@ class TTTPlayer
 end
 
 class Human < TTTPlayer
-  def move(game_crafter)
-    @choice = pick_one_of(game_crafter.available_choices)
+  def move(board)
+    @choice = pick_one_of(board.unmarked_squares_number)
     add_choice
-    game_crafter.accomodate_choice(self)
+    board[choice] = marker
   end
 
   def pick_one_of(available_choices)
@@ -612,7 +521,7 @@ class Human < TTTPlayer
   end
 
   def choice_valid?(square, available_choices)
-    /\A\d\Z/.match(square) && available_choices.include?(square.to_i)
+    /\A\d\d?\Z/.match(square) && available_choices.include?(square.to_i)
   end
 
   def default_marker
@@ -647,10 +556,10 @@ class Human < TTTPlayer
 end
 
 class Computer < TTTPlayer
-  def move(game_crafter)
-    @choice = game_crafter.strategy_choice(self)
+  def move(board)
+    @choice = board.suggest(self)
     add_choice
-    game_crafter.accomodate_choice(self)
+    board[choice] = marker
   end
 
   def marker_message
@@ -680,15 +589,12 @@ class Computer < TTTPlayer
   end
 end
 
-# Allow to retreive messages stored in .yml file.
+# Allow to retreive inputs from the user
+# using messages stored in .yml file.
 # To mix this in and use it's #retrieve method implement:
 # #handle_option_message, #validator #handle_option_error.
 # To use ERB template in .yml file
 # provide suitable binding in #local_binding
-
-require 'yaml'
-require 'erb'
-
 module Retrievable
   private
 
@@ -776,7 +682,7 @@ class TTTGamesRunner
   def initialize
     @board = Board.new
     @players = [first_player_default, scond_player_default]
-    @game = GameRoundCrafter.new(players: players, ruler: board)
+    @game = GameRoundCrafter.new(players: players, board: board)
     @contest_threshold = 2
     @multi_game = true
     @retrieved_options = {}
@@ -901,7 +807,7 @@ class TTTGamesRunner
   def update_game_settings
     update_first_player
     board.reset(retrieved_options[:board_rows].to_i)
-    @game = GameRoundCrafter.new(players: players, ruler: board)
+    @game = GameRoundCrafter.new(players: players, board: board)
     self.multi_game = retrieved_options[:multi_game].downcase == 'y'
     return unless multi_game
 
@@ -1047,7 +953,7 @@ class TTTGamesRunner
   def new_game_same_players
     players.each(&:reset_choices)
     board.reset
-    @game = GameRoundCrafter.new(players: players, ruler: board)
+    @game = GameRoundCrafter.new(players: players, board: board)
   end
 
   def display_result

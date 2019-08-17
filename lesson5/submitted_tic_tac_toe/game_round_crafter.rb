@@ -1,20 +1,15 @@
-require_relative 'game_crafter'
-require_relative 'printer'
-
 # Plays a one round game.
-# It has to be provided with players and a Ruler for the parent class.
-class GameRoundCrafter < GameCrafter
-  include Printer
+# It has to be provided with players and a Board
+class GameRoundCrafter
   attr_reader :winner
-  attr_accessor :ruler, :players
+  attr_accessor :board, :players
 
   def initialize(args)
-    @ruler = args[:ruler]
+    @board = args[:board]
     @players = args[:players]
     @players_enum = @players.to_enum
     @current_player = @players_enum.next
     @winner = nil
-    super(ruler)
   end
 
   def play
@@ -39,13 +34,13 @@ class GameRoundCrafter < GameCrafter
   private
 
   def current_player_won?
-    player_won?(@current_player)
+    board.player_won?(@current_player)
   end
 
   def display_game_field
     display_intro
     puts ""
-    super
+    board.draw
     puts ""
   end
 
@@ -54,7 +49,7 @@ class GameRoundCrafter < GameCrafter
   end
 
   def game_over?
-    exhausted?
+    board.unmarked_squares_number.empty?
   end
 
   def clear
@@ -62,7 +57,7 @@ class GameRoundCrafter < GameCrafter
   end
 
   def current_player_moves
-    @current_player.move(self)
+    @current_player.move(board)
   end
 
   def swap_player_clear_screen

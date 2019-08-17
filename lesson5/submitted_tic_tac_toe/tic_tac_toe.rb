@@ -31,7 +31,7 @@ class TTTGamesRunner
   def initialize
     @board = Board.new
     @players = [first_player_default, scond_player_default]
-    @game = GameRoundCrafter.new(players: players, ruler: board)
+    @game = GameRoundCrafter.new(players: players, board: board)
     @contest_threshold = 2
     @multi_game = true
     @retrieved_options = {}
@@ -156,7 +156,7 @@ class TTTGamesRunner
   def update_game_settings
     update_first_player
     board.reset(retrieved_options[:board_rows].to_i)
-    @game = GameRoundCrafter.new(players: players, ruler: board)
+    @game = GameRoundCrafter.new(players: players, board: board)
     self.multi_game = retrieved_options[:multi_game].downcase == 'y'
     return unless multi_game
 
@@ -302,7 +302,7 @@ class TTTGamesRunner
   def new_game_same_players
     players.each(&:reset_choices)
     board.reset
-    @game = GameRoundCrafter.new(players: players, ruler: board)
+    @game = GameRoundCrafter.new(players: players, board: board)
   end
 
   def display_result

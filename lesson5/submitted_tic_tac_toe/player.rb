@@ -88,10 +88,10 @@ class TTTPlayer
 end
 
 class Human < TTTPlayer
-  def move(game_crafter)
-    @choice = pick_one_of(game_crafter.available_choices)
+  def move(board)
+    @choice = pick_one_of(board.unmarked_squares_number)
     add_choice
-    game_crafter.accomodate_choice(self)
+    board[choice] = marker
   end
 
   def pick_one_of(available_choices)
@@ -108,7 +108,7 @@ class Human < TTTPlayer
   end
 
   def choice_valid?(square, available_choices)
-    /\A\d\Z/.match(square) && available_choices.include?(square.to_i)
+    /\A\d\d?\Z/.match(square) && available_choices.include?(square.to_i)
   end
 
   def default_marker
@@ -143,10 +143,10 @@ class Human < TTTPlayer
 end
 
 class Computer < TTTPlayer
-  def move(game_crafter)
-    @choice = game_crafter.strategy_choice(self)
+  def move(board)
+    @choice = board.suggest(self)
     add_choice
-    game_crafter.accomodate_choice(self)
+    board[choice] = marker
   end
 
   def marker_message

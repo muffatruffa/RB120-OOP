@@ -1,4 +1,5 @@
-require_relative 'ruler'
+require_relative 'drawer'
+require_relative 'square'
 
 # Allows access to a double array as a single array using a Tile jargon
 # To mix this in you have to implement #two_d_array
@@ -8,6 +9,12 @@ module Tileable
 
   def size
     number_of_tiles
+  end
+
+  def []=(tile_number, value)
+    return unless valid_square?(tile_number)
+
+    set_tile_value(two_d_array[row(tile_number)][column(tile_number)], value)
   end
 
   private
@@ -24,12 +31,6 @@ module Tileable
     return nil unless valid_square?(tile_number)
 
     two_d_array[row(tile_number)][column(tile_number)]
-  end
-
-  def []=(tile_number, value)
-    return unless valid_square?(tile_number)
-
-    set_tile_value(two_d_array[row(tile_number)][column(tile_number)], value)
   end
 
   def tile_number(target_object)
@@ -88,16 +89,19 @@ module Tileable
   end
 end
 
-# Implements the Board game logic as privates methods.
-# It uses BoardRuler as interface.
-class Board < BoardRuler
+class Board
   include Tileable
 
+  attr_reader :drawer
   attr_accessor :number_of_rows_columns
 
   def initialize(rows_columns = 3)
+    @drawer = Drawer.new
     reset(rows_columns)
-    super()
+  end
+
+  def draw
+    drawer.draw_board(self, number_of_rows_columns)
   end
 
   def reset(rows_columns = number_of_rows_columns)
@@ -105,6 +109,29 @@ class Board < BoardRuler
     @squares = Array.new(number_of_rows_columns) do |_|
       Array.new(number_of_rows_columns) { Square.new }
     end
+  end
+
+  def unmarked_squares_number
+    unmarked = []
+    each_with_index do |square_object, square_index|
+      unmarked << square_index + 1 if square_object.unmarked?
+    end
+    unmarked
+  end
+
+  def player_won?(player)
+    winning_combinations.each do |combination|
+      squares = combination.map { |square| square_number(square) }
+      return true if squares.include?(player.choice) &&
+                     all_same_marker?(combination)
+    end
+    false
+  end
+
+  def suggest(player)
+    winning_move(player.marker) ||
+      defensive_move(player.marker) ||
+      corner_center_or_any_move
   end
 
   private
@@ -123,14 +150,6 @@ class Board < BoardRuler
 
   def all_same_marker?(squares_to_compare)
     all_same?(squares_to_compare)
-  end
-
-  def unmarked_squares_number
-    unmarked = []
-    each_with_index do |square_object, square_index|
-      unmarked << square_index + 1 if square_object.unmarked?
-    end
-    unmarked
   end
 
   def select_marked(target_marker)
