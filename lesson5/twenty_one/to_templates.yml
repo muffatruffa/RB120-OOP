@@ -1,0 +1,14 @@
+to_welcome: "Welcome to Twenty One!"
+to_rules: "The goal of Twenty-One is to try to get as close to 21 as possible,\n\
+  without going over. If you go over 21, it's a \"bust\" and you lose.\n\n\
+  Card values: The numbers 2 through 10 are worth their face value.\n\
+    The jack, queen, and king are each worth 10,\n\
+    and the ace can be worth 1 or 11.  If the sum of the hand  exceeds 21\n\
+    then one or more of the aces must be worth 1.\n"
+to_game:  "You can play against the computer with players:.\n\
+  <%= @players.first %>.\n"
+t_o_player_hit: "<% if @picked_card %>
+  Player hit and got <%= @picked_card  %>
+                <% end %>"
+stay_option: "Do you hit or stay? (h / s)\n"
+stay_error: "Sorry that's not a valid answer, enter h to hit s to stay."
