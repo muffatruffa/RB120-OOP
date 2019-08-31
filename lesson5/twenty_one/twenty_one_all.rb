@@ -1,8 +1,5 @@
 require 'yaml'
 require 'erb'
-require_relative 'game_crafter'
-require_relative 't_o_player'
-require_relative 'deck'
 
 # Allow to retreive inputs from the user
 # using messages stored in .yml file.
