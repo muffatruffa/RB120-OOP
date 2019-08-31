@@ -35,7 +35,6 @@ class ToDeckRuler < Deck
   def initialize(players)
     super()
     @players = players
-    # start_tracking_players(players)
     deal
   end
 
@@ -49,9 +48,14 @@ class ToDeckRuler < Deck
 
   def draw
     @players.each do |player|
+      player.reset_hidden if some_one_busted?
       puts
-      print_margin player.class.to_s
-      player.cards.each { |card| print_margin(card.to_s, Printer::MARGIN, '') }
+      print_margin "#{player.name}'s cards ( #{player.pronoun} )"
+      player.cards.each do |card|
+        sleep(0.5)
+        print_margin(card.to_s, Printer::MARGIN, '')
+      end
+      print_margin("( #{player.score_message} )", Printer::MARGIN, '')
       puts
     end
   end
@@ -85,6 +89,16 @@ class ToDeckRuler < Deck
 
   def some_one_busted?
     @players.any?(&:busted?)
+  end
+
+  def winner
+    return @players.reject(&:busted?).first if some_one_busted?
+    max_score = @players.first.score_value
+    round_winner = @players.first
+    @players.each do |player|
+      round_winner = player if player.score_value > max_score
+    end
+    round_winner
   end
 
   def tie?

@@ -59,6 +59,7 @@ module Retrievable
   end
 
   module HandleOptions
+    attr_accessor :retrieved_options
     def concat_to_option_key(key, tail)
       key.to_s + tail
     end
@@ -122,6 +123,23 @@ module Retrievable
       set_option_binding(option_key, template_binding)
       retrieve
     end
+
+    def retrieved_merge_retrieve_many(enumerable, option_key)
+      handle_option_intro(option_key)
+      retrieved = enumerable.each_with_object([]) do |item, result|
+        answer = nil
+        loop do
+          answer = set_retrieve_option(option_key,
+                                       template_binding: item.template_binding)
+          downcased = result.map(&:downcase)
+          break unless downcased.include?(answer.downcase)
+
+          handle_uniq_error
+        end
+        result << answer
+      end
+      retrieved_options[option_key] = retrieved
+    end
   end
 
   # provides #validator
@@ -180,6 +198,10 @@ module Retrievable
       median = to_slice.size / 2
       print(to_slice[0..median] + "\n")
       print(margin + to_slice[(median + 1)..-1].lstrip)
+    end
+
+    def clear
+      system('clear') || system('cls')
     end
   end
 end

@@ -4,11 +4,35 @@ to_rules: "The goal of Twenty-One is to try to get as close to 21 as possible,\n
   Card values: The numbers 2 through 10 are worth their face value.\n\
     The jack, queen, and king are each worth 10,\n\
     and the ace can be worth 1 or 11.  If the sum of the hand  exceeds 21\n\
-    then one or more of the aces must be worth 1.\n"
-to_game:  "You can play against the computer with players:.\n\
-  <%= @players.first %>.\n"
-t_o_player_hit: "<% if @picked_card %>
-  Player hit and got <%= @picked_card  %>
-                <% end %>"
-stay_option: "Do you hit or stay? (h / s)\n"
+    then one or more of the aces must be worth 1.\n\
+    You can play a competition where\n\
+    the first player that wins <%= TORunner::GAME_THRESHOLD %> rouds wins the Game.\n"
+to_choose_name: "\nTime to play.\n\n\
+  You can choose players names.\n"
+to_game_winner: "<%= contest_winner.name %> scored <%= TORunner::GAME_THRESHOLD %>.\n\
+  <%= contest_winner.name %> won the game!"
+round_result: "<% if game.winner %>\
+  \n<%= game.winner.name %> won.\n
+  <% else %>\
+  \nIt's a tie!\n
+  <% end %>"
+goodbye: "Thanks, goodbye!"
+players_name_option:  "Please enter <%= determiner %> player name"
+players_name_error: "Sorry that's not a valid name. It can't be empty or only spaces.\n"
+players_name_uniq: "Sorry can't be the same name, choose another one with different letters.\n"
+user_choose_name_option: "Do you want to choose the name for players? (y / n)"
+user_choose_name_error: "Sorry thta's not a valid answer, enter y or n.\n"
+user_choose_name__intro: "\nYou may choose all player's name, call them as you like\n"
+player_quit_option: "Eneter 'q' to quit the game or any key to play again."
+player_quit_error: ""
+quit_game_option: "Do you want to play another game? (y / n)"
+quit_game_error: "Sorry thta's not a valid answer, enter y or n.\n"
+player_stayed: "<%= pronoun %> satyed.\n"
+player_stayed_busted: "<% if busted? %>\
+  \n<%= name %> busted.\n
+  <% else %>\
+  \n<%= name %> satyed.\n
+  <% end %>"
+player_turn: "\nIt's <%= determiner %> turn..\n"
+stay_option: "\nDo you hit or stay? (h / s)\n"
 stay_error: "Sorry that's not a valid answer, enter h to hit s to stay."

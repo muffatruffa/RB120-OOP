@@ -338,6 +338,22 @@ class TTTGamesRunner
   def player_quit?(quit = 'q')
     quit == set_retrieve_option(:player_quit).downcase
   end
+
+  def prompt(message, margin = '  ')
+    return if message.nil? || message == ''
+
+    lines = message.split(/\n/)
+    lines[0..-2].each { |message_line| print margin + message_line + "\n" }
+    print margin + lines[-1] + " => "
+  end
+
+  def print_margin(message, margin = '  ', tail = "\n\n")
+    return if message.nil? || message == ''
+
+    lines = message.split(/\n/)
+    lines[0..-2].each { |message_line| print margin + message_line + "\n" }
+    print margin + lines[-1] + tail
+  end
 end
 
 contest = TTTGamesRunner.new

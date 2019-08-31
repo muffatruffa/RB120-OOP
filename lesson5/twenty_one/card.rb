@@ -21,8 +21,7 @@ class Card
   end
 
   def to_s
-    sleep(1.0 / 3.0)
     return " |#{rank} #{utf_suit}| " unless hidden
-    ''
+    " |? ?| "
   end
 end
