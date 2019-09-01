@@ -80,8 +80,6 @@ class GameRoundCrafter < GameCrafter
   end
 end
 
-
-
 class TORunner
   include Retrievable
 
@@ -102,16 +100,8 @@ class TORunner
     load_yaml_file
   end
 
-  def play
-    start
-    play_games
-  end
-
-  private
-
-  attr_accessor :local_binding
-
   def play_games
+    start
     loop do
       play_rounds
       display_game_result
@@ -123,6 +113,10 @@ class TORunner
     end
     display_template_bind("goodbye")
   end
+
+  private
+
+  attr_accessor :local_binding
 
   def player_new_game?(yes = 'y')
     yes == set_retrieve_option(:quit_game).downcase
@@ -221,4 +215,4 @@ class TORunner
 end
 
 to_game = TORunner.new
-to_game.play
+to_game.play_games

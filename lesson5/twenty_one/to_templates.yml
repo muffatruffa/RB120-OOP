@@ -21,17 +21,17 @@ players_name_option:  "Please enter <%= determiner %> player name"
 players_name_error: "Sorry that's not a valid name. It can't be empty or only spaces.\n"
 players_name_uniq: "Sorry can't be the same name, choose another one with different letters.\n"
 user_choose_name_option: "Do you want to choose the name for players? (y / n)"
-user_choose_name_error: "Sorry thta's not a valid answer, enter y or n.\n"
+user_choose_name_error: "Sorry that's not a valid answer, enter y or n.\n"
 user_choose_name__intro: "\nYou may choose all player's name, call them as you like\n"
-player_quit_option: "Eneter 'q' to quit the game or any key to play again."
+player_quit_option: "Enter 'q' to quit the game or any key to play again."
 player_quit_error: ""
 quit_game_option: "Do you want to play another game? (y / n)"
-quit_game_error: "Sorry thta's not a valid answer, enter y or n.\n"
-player_stayed: "<%= pronoun %> satyed.\n"
+quit_game_error: "Sorry that's not a valid answer, enter y or n.\n"
+player_stayed: "<%= pronoun %> stayed.\n"
 player_stayed_busted: "<% if busted? %>\
   \n<%= name %> busted.\n
   <% else %>\
-  \n<%= name %> satyed.\n
+  \n<%= name %> stayed.\n
   <% end %>"
 player_turn: "\nIt's <%= determiner %> turn..\n"
 stay_option: "\nDo you hit or stay? (h / s)\n"

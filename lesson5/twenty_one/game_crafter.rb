@@ -15,11 +15,7 @@ class GameCrafter
   end
 
   def strategy_choice(player)
-    minded_choice || ruler.suggest(player)
-  end
-
-  def minded_choice
-    nil
+    ruler.suggest(player)
   end
 
   def accomodate_choice(player)
